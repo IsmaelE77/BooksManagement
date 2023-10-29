@@ -7,16 +7,20 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import model.AppUser;
 import model.Book;
-
+import model.Role;
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.Serial;
 import java.sql.SQLException;
 import java.util.List;
 
 
 @WebServlet(description = "book store controller" , urlPatterns = {"/"})
 public class ControllerServlet extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 1L;
     private BookDAO bookDAO;
 
@@ -33,23 +37,48 @@ public class ControllerServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getServletPath();
+        AppUser user = null;
+        HttpSession session = request.getSession(false);
+
+        if(session != null)
+            user = (AppUser) session.getAttribute("user");
 
         try {
             switch (action) {
                 case "/new":
-                    showNewForm(request, response);
+                    if (hasAdminRole(user)) {
+                        showNewForm(request, response);
+                    } else {
+                        accessDeniedPage(request,response);
+                    }
                     break;
                 case "/insert":
-                    insertBook(request, response);
+                    if (hasAdminRole(user)) {
+                        insertBook(request, response);
+                    } else {
+                        accessDeniedPage(request,response);
+                    }
                     break;
                 case "/delete":
-                    deleteBook(request, response);
+                    if (hasAdminRole(user)) {
+                        deleteBook(request, response);
+                    } else {
+                        accessDeniedPage(request,response);
+                    }
                     break;
                 case "/edit":
-                    showEditForm(request, response);
+                    if (hasAdminRole(user)) {
+                        showEditForm(request, response);
+                    } else {
+                        accessDeniedPage(request,response);
+                    }
                     break;
                 case "/update":
-                    updateBook(request, response);
+                    if (hasAdminRole(user)) {
+                        updateBook(request, response);
+                    } else {
+                        accessDeniedPage(request,response);
+                    }
                     break;
                 default:
                     listBook(request, response);
@@ -58,6 +87,17 @@ public class ControllerServlet extends HttpServlet {
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
+    }
+
+    private boolean hasAdminRole(AppUser user) {
+        if(user == null)
+            return false;
+        String role = String.valueOf(user.getRole());
+        return "Admin".equals(role);
+    }
+
+    private void accessDeniedPage(HttpServletRequest request ,HttpServletResponse response) throws IOException {
+        response.sendRedirect(request.getContextPath() + "/AccessDenied.jsp");
     }
 
     private void listBook(HttpServletRequest request, HttpServletResponse response)

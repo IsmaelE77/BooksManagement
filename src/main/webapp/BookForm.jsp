@@ -1,6 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ page import="model.AppUser" %>
+<%
+    AppUser user = (AppUser) session.getAttribute("user");
+     if (user == null || "user".equals(user.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/AccessDenied.jsp");
+     }
+%>
+
 <html>
 <head>
     <title>Books Store Application</title>
@@ -12,7 +20,6 @@
             <a href="/BookManagement/new">Add New Book</a>
             &nbsp;&nbsp;&nbsp;
             <a href="/BookManagement/list">List All Books</a>
-
         </h2>
     </center>
     <div align="center">

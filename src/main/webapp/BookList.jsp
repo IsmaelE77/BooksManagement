@@ -7,6 +7,19 @@
     <title>Books Store Application</title>
 </head>
 <body>
+    <c:set var="user" value="${sessionScope.user}" /> <!-- Retrieve user object from the session -->
+
+    <c:choose>
+        <c:when test="${not empty user}">
+            <div>
+                <span align="left">User: <c:out value="${user.name}" /></span>
+                <a align="right" href="/BookManagement/logout">Logout</a>
+            </div>
+        </c:when>
+        <c:otherwise>
+            <a align="right" href="/BookManagement/login">Login</a>
+        </c:otherwise>
+    </c:choose>
     <center>
         <h1>Books Management</h1>
         <h2>
